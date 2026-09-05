@@ -1,0 +1,554 @@
+{
+  "name": "My ragworkflow1",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Load File  To ingest",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "add file here",
+              "fieldType": "file"
+            },
+            {
+              "fieldLabel": "Add reference"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e1e1c217-cec7-4b71-8cd1-a9b29b058382",
+      "name": "On form submission",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "64da1ebc-aa0a-4626-9d9c-f14e72c9fa72"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "mode": "list",
+          "value": "my-chatbot"
+        },
+        "embeddingBatchSize": 100,
+        "options": {}
+      },
+      "id": "d0ae1f14-caa2-41f4-9c52-9a0c8cf9ef33",
+      "name": "Qdrant Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        0
+      ],
+      "credentials": {
+        "qdrantApi": {
+          "id": "VWPvUlIGO7HYAMZI",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "9b88ad0b-08d1-4dc8-bcfb-3f1466723985",
+      "name": "Embeddings Google Gemini",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        224,
+        176
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "3woiRsMOj2cS43Xy",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "id": "c03b5452-2405-4461-ae03-27617ff70914",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "chunkSize": 400,
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "id": "d1219d79-99c0-4298-9feb-fb5978424498",
+      "name": "Recursive Character Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        400,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "content": "rag ingestion process",
+        "height": 640,
+        "width": 864,
+        "color": "#995656"
+      },
+      "id": "5dac97d8-0ec5-402a-9386-51cfcc3992f7",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "content": "chat model",
+        "height": 736,
+        "width": 1392,
+        "color": 6
+      },
+      "id": "97f60f09-dbbf-4710-b445-d3d31ea76480",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1584,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseMode": "lastNode"
+        }
+      },
+      "id": "dfe90fc5-0744-4328-9cdd-c07be1d4bfba",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -1424,
+        -80
+      ],
+      "webhookId": "3a901b5a-627d-446d-90dd-94f7adbb38de"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Webhook').isExecuted ? ($('Webhook').item.json.body.question || $('Webhook').item.json.body.chatInput) : ($('Ask a question').isExecuted ? $('Ask a question').item.json.Question : $('When chat message received').item.json.chatInput) }}",
+        "options": {
+          "systemMessage": "You are a knowledge-base assistant. For EVERY user question, you MUST first call the \"Qdrant Vector Store1\" retrieval tool to search the knowledge base, then answer using only the information it returns. Do not answer from your own general knowledge. If the retrieval tool returns nothing relevant, reply that you could not find the answer in the provided documents. When relevant, cite the reference/source from the retrieved content.",
+          "enableStreaming": false
+        }
+      },
+      "id": "50c6ef15-4c00-488b-b081-8fa2fca1684d",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1104,
+        -80
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "08320891-f1d6-464f-9669-7afebbd25377",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -784,
+        288
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "3woiRsMOj2cS43Xy",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').isExecuted ? ($('Webhook').item.json.body.sessionId || 'streamlit-default') : ($('Ask a question').isExecuted ? 'n8n-form-session' : $('When chat message received').item.json.sessionId) }}"
+      },
+      "id": "ed8e31ff-1739-4c4a-a0c2-1c30c2a8c816",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -640,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "use this tool to fetch data knowledge from the database",
+        "qdrantCollection": {
+          "__rl": true,
+          "mode": "list",
+          "value": "my-chatbot"
+        },
+        "options": {}
+      },
+      "id": "728a5a07-2074-4c9a-8539-dc36191aa6b3",
+      "name": "Qdrant Vector Store1",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        -496,
+        272
+      ],
+      "credentials": {
+        "qdrantApi": {
+          "id": "VWPvUlIGO7HYAMZI",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "cd540b42-5341-47f4-ae49-4c7e4d259335",
+      "name": "Embeddings Google Gemini1",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        464
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "3woiRsMOj2cS43Xy",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"answer\": $json.output } }}",
+        "options": {}
+      },
+      "id": "a1deb87b-796e-4cf1-a87e-10dd9871dc89",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -672,
+        -128
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Here is your answer",
+        "completionMessage": "={{ $json.output }}",
+        "options": {}
+      },
+      "id": "7abc5599-8b89-48b8-8b31-f1ba31c7d9fc",
+      "name": "Show Answer",
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        -400,
+        -16
+      ],
+      "webhookId": "58e1ea24-1c79-486d-9814-39f051a90571"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1Q8JkOP6ccxIQHGYIA-BTZSqUtGhHfh9Hg5NW7yJTz94"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "754127696",
+          "cachedResultName": "Sheet1"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now.toISO() }}",
+            "Question": "={{ $('Webhook').isExecuted ? ($('Webhook').item.json.body.question || $('Webhook').item.json.body.chatInput) : ($('Ask a question').isExecuted ? $('Ask a question').item.json.Question : $('When chat message received').item.json.chatInput) }}",
+            "Answer": "={{ $json.output }}"
+          },
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Question",
+              "displayName": "Question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Answer",
+              "displayName": "Answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1e6cb786-07a1-4a65-b398-5f9561994787",
+      "name": "Save Q&A to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -592,
+        48
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "walf8zjhncXjQFAX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rag-chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "9536bf2f-b0ba-4873-a2bf-6c0d708afa85",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1424,
+        128
+      ],
+      "webhookId": "5098d6d0-31e1-40e3-9e24-13f287c2ec89"
+    },
+    {
+      "parameters": {
+        "formTitle": "Ask the knowledge base",
+        "formDescription": "Type your question below and click Submit to see the answer.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Question",
+              "fieldName": "Question",
+              "placeholder": "e.g. What is this knowledge base about?",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "b2cfcb1a-c8b4-4b5e-a915-d58d09308f93",
+      "name": "Ask a question",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -1424,
+        336
+      ],
+      "webhookId": "a7f0c9d2-1e34-4b56-8c90-ff11aa22bb33"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Show Answer",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Q&A to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask a question": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Singapore",
+    "saveDataErrorExecution": "all",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "e57df450-3ac4-48b1-b722-6c34ff655a30",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1b3501fd34282347eecdcd1e9a3badcf2c4360fa2ccdd9de5f0d745b401ba6a9"
+  },
+  "nodeGroups": [],
+  "id": "oHm3Ct0TSkyMBE6N",
+  "tags": []
+}
